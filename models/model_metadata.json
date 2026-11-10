@@ -1,0 +1,28 @@
+{
+    "model_name": "Random Forest Regressor",
+    "target": "Next_Day_AQI",
+    "features": [
+        "PM2.5",
+        "PM10",
+        "NO",
+        "NO2",
+        "NOx",
+        "NH3",
+        "CO",
+        "SO2",
+        "O3",
+        "Benzene",
+        "Toluene",
+        "AQI",
+        "Month",
+        "City"
+    ],
+    "training_records": 24343,
+    "evaluation": {
+        "mae": 20.39,
+        "rmse": 42.71,
+        "r2": 0.8303,
+        "baseline_mae": 22.1,
+        "baseline_rmse": 47.27
+    }
+}

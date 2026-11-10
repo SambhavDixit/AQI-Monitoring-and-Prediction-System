@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirSight | AQI Monitoring & Prediction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app-container">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">A</div>
+            <div>
+                <h2>AirSight</h2>
+                <span>AQI intelligence</span>
+            </div>
+        </div>
+
+        <div class="sidebar-label">WORKSPACE</div>
+        <nav class="sidebar-nav">
+            <a href="#overview" class="nav-link active">◈ <span>Overview</span></a>
+            <a href="#trends" class="nav-link">⌁ <span>AQI Trends</span></a>
+            <a href="#pollutants" class="nav-link">◉ <span>Pollutants</span></a>
+            <a href="#comparison" class="nav-link">▥ <span>City Comparison</span></a>
+            <a href="#performance" class="nav-link">◎ <span>Model Performance</span></a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-status-dot"></div>
+            <div>
+                <strong>System status</strong>
+                <span id="systemStatus">Checking...</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">AIR QUALITY ANALYTICS</p>
+                <h1>Monitoring Dashboard</h1>
+                <p class="topbar-subtitle">Explore historical air quality and next-day AQI predictions.</p>
+            </div>
+            <div class="city-filter">
+                <label for="citySelect">SELECT CITY</label>
+                <select id="citySelect">
+                    <option value="">Loading cities...</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="historical-notice">
+            <span class="notice-icon">ⓘ</span>
+            <div>
+                <strong>Historical dataset</strong>
+                <span>This dashboard uses historical observations (2015–2020). Predictions are model-generated estimates, not live AQI readings.</span>
+            </div>
+        </div>
+
+        <section id="overview">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">CITY OVERVIEW</p>
+                    <h2 id="selectedCity">Loading city...</h2>
+                </div>
+                <span class="date-label" id="observationDate">Observation date: —</span>
+            </div>
+
+            <div class="overview-grid">
+                <article class="dashboard-card current-card">
+                    <div class="card-topline">
+                        <span>Latest recorded AQI</span>
+                        <span class="card-icon">◉</span>
+                    </div>
+                    <div class="aqi-display">
+                        <div>
+                            <div class="large-value" id="currentAQI">--</div>
+                            <span class="category-pill" id="currentCategory">Loading</span>
+                        </div>
+                        <div class="aqi-gauge" id="aqiGauge">
+                            <div class="gauge-inner">
+                                <span>AQI</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-footnote">Latest available historical observation</p>
+                </article>
+
+                <article class="dashboard-card prediction-card">
+                    <div class="card-topline">
+                        <span>Next-day AQI prediction</span>
+                        <span class="card-icon">↗</span>
+                    </div>
+                    <div class="large-value" id="predictedAQI">--</div>
+                    <span class="category-pill prediction-pill" id="predictedCategory">Loading</span>
+                    <div class="prediction-meta">
+                        <span>Predicted for</span>
+                        <strong id="predictionDate">—</strong>
+                    </div>
+                    <p class="card-footnote">Estimated using the trained machine-learning model</p>
+                </article>
+
+                <article class="dashboard-card insight-card">
+                    <div class="card-topline">
+                        <span>Prediction summary</span>
+                        <span class="card-icon">✦</span>
+                    </div>
+                    <div class="insight-number" id="aqiDifference">--</div>
+                    <p id="aqiInsight">Waiting for prediction data...</p>
+                    <div class="comparison-bars">
+                        <div class="bar-label"><span>Recorded</span><strong id="comparisonCurrent">--</strong></div>
+                        <div class="progress-track"><div class="progress-fill current-fill" id="currentBar"></div></div>
+                        <div class="bar-label"><span>Predicted</span><strong id="comparisonPredicted">--</strong></div>
+                        <div class="progress-track"><div class="progress-fill predicted-fill" id="predictedBar"></div></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="trends" class="dashboard-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">HISTORICAL ANALYSIS</p>
+                    <h2>AQI Trends</h2>
+                </div>
+                <select id="historyRange" class="small-select">
+                    <option value="30">Last 30 observations</option>
+                    <option value="90">Last 90 observations</option>
+                    <option value="180">Last 180 observations</option>
+                    <option value="365">Last 365 observations</option>
+                </select>
+            </div>
+            <article class="dashboard-card chart-card">
+                <div class="chart-heading">
+                    <div>
+                        <h3>Historical AQI pattern</h3>
+                        <p>Recorded AQI values over the selected observations</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="historyChart"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <section id="pollutants" class="dashboard-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">POLLUTION BREAKDOWN</p>
+                    <h2>Pollutant Analysis</h2>
+                </div>
+                <select id="pollutantSelect" class="small-select">
+                    <option value="PM2.5">PM2.5</option>
+                    <option value="PM10">PM10</option>
+                    <option value="NO2">NO2</option>
+                    <option value="NO">NO</option>
+                    <option value="NOx">NOx</option>
+                    <option value="NH3">NH3</option>
+                    <option value="CO">CO</option>
+                    <option value="SO2">SO2</option>
+                    <option value="O3">O3</option>
+                    <option value="Benzene">Benzene</option>
+                    <option value="Toluene">Toluene</option>
+                </select>
+            </div>
+            <article class="dashboard-card chart-card">
+                <div class="chart-heading">
+                    <div>
+                        <h3 id="pollutantChartTitle">PM2.5 concentration</h3>
+                        <p>Recent historical pollutant measurements</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="pollutantChart"></canvas>
+                </div>
+            </article>
+
+            <div class="section-heading pollutant-heading">
+                <div>
+                    <p class="eyebrow">LATEST AVAILABLE VALUES</p>
+                    <h2>Pollutant Concentrations</h2>
+                </div>
+            </div>
+            <div class="pollutant-grid" id="pollutantGrid">
+                <div class="empty-state">Loading pollutant data...</div>
+            </div>
+        </section>
+
+        <section id="comparison" class="dashboard-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">MULTI-CITY ANALYSIS</p>
+                    <h2>City Comparison</h2>
+                </div>
+            </div>
+            <article class="dashboard-card chart-card">
+                <div class="chart-heading">
+                    <div>
+                        <h3>Latest recorded AQI by city</h3>
+                        <p>Comparison of each city's latest available observation</p>
+                    </div>
+                </div>
+                <div class="chart-container tall-chart">
+                    <canvas id="cityChart"></canvas>
+                </div>
+                <p class="chart-note">Observation dates may differ between cities.</p>
+            </article>
+        </section>
+
+        <section id="performance" class="dashboard-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">MACHINE LEARNING</p>
+                    <h2>Model Performance</h2>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <article class="dashboard-card metric-card">
+                    <span>Mean Absolute Error</span>
+                    <strong id="modelMAE">--</strong>
+                    <small>Lower is better</small>
+                </article>
+                <article class="dashboard-card metric-card">
+                    <span>Root Mean Squared Error</span>
+                    <strong id="modelRMSE">--</strong>
+                    <small>Lower is better</small>
+                </article>
+                <article class="dashboard-card metric-card">
+                    <span>R² Score</span>
+                    <strong id="modelR2">--</strong>
+                    <small>Variance explained</small>
+                </article>
+                <article class="dashboard-card metric-card">
+                    <span>Training Records</span>
+                    <strong id="trainingRecords">--</strong>
+                    <small>Records used for final model</small>
+                </article>
+            </div>
+
+            <article class="dashboard-card chart-card performance-chart-card">
+                <div class="chart-heading">
+                    <div>
+                        <h3>City-wise prediction error</h3>
+                        <p>Mean Absolute Error (MAE) across cities</p>
+                    </div>
+                </div>
+                <div class="chart-container tall-chart">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </article>
+
+            <article class="dashboard-card chart-card">
+                <div class="chart-heading">
+                    <div>
+                        <h3>Prediction error by AQI category</h3>
+                        <p>Model MAE across different air quality categories</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </article>
+
+            <div class="model-note" id="modelNote">
+                Model evaluation metrics are loaded from the saved training results.
+            </div>
+        </section>
+
+        <footer class="page-footer">
+            <span>AirSight · AQI Monitoring & Prediction System</span>
+            <span>Machine learning project · Historical dataset analysis</span>
+        </footer>
+    </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
